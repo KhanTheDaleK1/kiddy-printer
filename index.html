@@ -108,6 +108,7 @@
               <h2 id="cam-card-title">Live Camera View</h2>
             </div>
             <div class="card-actions">
+              <button id="cam-lens-toggle-btn" class="icon-action-btn hidden" onclick="app.toggleCameraLens()">🔍 Switch Cam</button>
               <button class="icon-action-btn" onclick="app.refreshCamera()" title="Refresh Camera Feed">🔄 Refresh</button>
               <button class="icon-action-btn" onclick="app.toggleCameraFullscreen()" title="Fullscreen Video">⛶ Big View</button>
               <button class="speak-inline-btn" onclick="app.speak('This is the live camera looking inside your 3D printer!')">🔊</button>
@@ -118,6 +119,7 @@
           <div id="camera-viewport" class="camera-viewport">
             <div id="cam-offline-banner" class="cam-badge">LIVE FEED</div>
             <img id="live-camera-img" class="camera-stream-img" src="" alt="Printer camera stream" onerror="app.onCameraError()">
+            <iframe id="live-camera-iframe" class="camera-stream-iframe hidden" src="" style="width: 100%; height: 100%; border: none;" scrolling="no"></iframe>
             
             <!-- Fallback animated 3D printing simulation if camera is offline -->
             <div id="camera-simulation" class="camera-simulation hidden">

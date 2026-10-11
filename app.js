@@ -1,6 +1,7 @@
 /**
  * Kiddy3D - Kid's 3D Printer Dashboard & Reading Companion
  * Built for 6-Year-Old Early Readers & Young Makers on iPad
+ * Configured with Evan Beechem's Live Printer Array (beechem.site)
  */
 
 class Kiddy3DApp {
@@ -11,52 +12,104 @@ class Kiddy3DApp {
     this.activeUtterance = null;
     this.activeManualIndex = 0;
     this.parentPin = "1234";
+    this.activeCameraLens = 'main'; // 'main' or 'nozzle'
 
-    // Default Printers with SVG generated avatars
+    // Actual Evan Beechem 3D Printer Array
     this.defaultPrinters = [
       {
-        id: "printer-1",
-        name: "Bambu Lab A1 (Speedy 🚀)",
-        avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230284C7'/><rect x='20' y='25' width='60' height='55' rx='10' fill='%23FFFFFF'/><circle cx='50' cy='52' r='18' fill='%2310B981'/><polygon points='45,42 62,52 45,62' fill='%23FFFFFF'/></svg>",
+        id: "ender3",
+        name: "Ender 3 (Little Blue 🛠️)",
+        avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230284C7'/><rect x='16' y='18' width='68' height='64' rx='8' fill='%231E293B'/><rect x='24' y='64' width='52' height='8' fill='%2338BDF8'/><rect x='44' y='32' width='12' height='16' fill='%23F59E0B'/><polygon points='46,48 54,48 50,56' fill='%23EF4444'/><circle cx='80' cy='24' r='8' fill='%2338BDF8'/></svg>",
         status: "printing",
-        jobName: "Super Space Rocket 🚀",
-        progress: 68,
-        nozzleTemp: 215,
-        targetNozzle: 220,
+        jobName: "Mini Tugboat Benchy ⛵",
+        progress: 64,
+        nozzleTemp: 205,
+        targetNozzle: 205,
         bedTemp: 60,
         targetBed: 60,
         timeLeftMins: 18,
-        streamUrl: "",
+        streamUrl: "https://maxprint.beechem.site/webcam_ender3/?action=stream",
+        nozzleStreamUrl: "https://maxprint.beechem.site/webcam2_ender3/?action=stream",
+        apiUrl: "https://beechem.site/octoprint-api/job?printer=octo",
+        webUrl: "https://maxprint.beechem.site/Ender3",
+        hasDualCam: true,
+        flipped: false,
         lightOn: true
       },
       {
-        id: "printer-2",
-        name: "Ender 3 V2 (Blue Builder 🛠️)",
-        avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%233B82F6'/><rect x='15' y='20' width='70' height='60' rx='8' fill='%231E293B'/><rect x='25' y='65' width='50' height='8' fill='%23F59E0B'/><polygon points='45,40 55,40 50,55' fill='%23EF4444'/></svg>",
+        id: "maxneo",
+        name: "Max Neo (Big Brother 🦾)",
+        avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23D97706'/><rect x='14' y='14' width='72' height='72' rx='10' fill='%230F172A'/><rect x='20' y='68' width='60' height='8' fill='%23F59E0B'/><rect x='42' y='28' width='16' height='20' fill='%2364748B'/><polygon points='46,48 54,48 50,58' fill='%23EF4444'/><circle cx='82' cy='20' r='10' fill='%23FBBF24'/></svg>",
+        status: "printing",
+        jobName: "Giant T-Rex Skull 🦖",
+        progress: 78,
+        nozzleTemp: 210,
+        targetNozzle: 210,
+        bedTemp: 60,
+        targetBed: 60,
+        timeLeftMins: 42,
+        streamUrl: "https://maxprint.beechem.site/webcam_maxneo/?action=stream",
+        nozzleStreamUrl: "https://maxprint.beechem.site/webcam2_maxneo/?action=stream",
+        apiUrl: "https://beechem.site/octoprint-api/job?printer=max",
+        webUrl: "https://maxprint.beechem.site/maxneo",
+        hasDualCam: true,
+        flipped: false,
+        lightOn: true
+      },
+      {
+        id: "ad5x",
+        name: "AD5X (Speed Cube ⚡)",
+        avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2310B981'/><rect x='18' y='18' width='64' height='64' rx='12' fill='%23064E3B'/><rect x='28' y='28' width='44' height='44' rx='8' fill='%23047857'/><circle cx='50' cy='50' r='14' fill='%2334D399'/><polygon points='46,42 58,50 46,58' fill='%23064E3B'/></svg>",
         status: "ready",
-        jobName: "Cute Dinosaur 🦖",
+        jobName: "Super Space Shuttle 🚀",
         progress: 100,
-        nozzleTemp: 26,
+        nozzleTemp: 28,
         targetNozzle: 0,
-        bedTemp: 24,
+        bedTemp: 26,
         targetBed: 0,
         timeLeftMins: 0,
-        streamUrl: "",
+        streamUrl: "https://ad5x.beechem.site/webcam/?action=stream",
+        webUrl: "https://ad5x.beechem.site/",
+        hasDualCam: false,
+        flipped: false,
         lightOn: false
       },
       {
-        id: "printer-3",
-        name: "Prusa MK4 (Orange Power 🧡)",
-        avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23F97316'/><rect x='20' y='20' width='60' height='60' rx='10' fill='%230F172A'/><circle cx='50' cy='50' r='16' fill='%23F97316'/><circle cx='50' cy='50' r='6' fill='%23FFFFFF'/></svg>",
+        id: "neptune",
+        name: "Neptune 4 Max (Giant Neptune 🌊)",
+        avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2306B6D4'/><rect x='12' y='16' width='76' height='68' rx='8' fill='%23164E63'/><rect x='18' y='68' width='64' height='10' fill='%2322D3EE'/><path d='M 30 78 Q 50 68 70 78' stroke='%230891B2' stroke-width='4' fill='none'/><rect x='44' y='30' width='12' height='18' fill='%23E0F2FE'/></svg>",
+        status: "ready",
+        jobName: "Castle Tower 🏰",
+        progress: 100,
+        nozzleTemp: 24,
+        targetNozzle: 0,
+        bedTemp: 23,
+        targetBed: 0,
+        timeLeftMins: 0,
+        streamUrl: "https://neptune.beechem.site/webcam/?action=stream",
+        webUrl: "https://neptune.beechem.site/",
+        hasDualCam: false,
+        flipped: true, // Camera is mounted inverted
+        lightOn: false
+      },
+      {
+        id: "mars",
+        name: "Mars 2 Pro (Magic Resin 🧪)",
+        avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23E11D48'/><rect x='22' y='52' width='56' height='34' rx='6' fill='%23881337'/><path d='M 24 52 Q 50 14 76 52 Z' fill='%23FB7185' opacity='0.85'/><circle cx='50' cy='42' r='8' fill='%23F43F5E'/></svg>",
         status: "paused",
-        jobName: "Race Car Toy 🏎️",
-        progress: 42,
-        nozzleTemp: 200,
-        targetNozzle: 200,
-        bedTemp: 55,
-        targetBed: 55,
-        timeLeftMins: 32,
-        streamUrl: "",
+        jobName: "Cute Baby Dragon 🐉",
+        progress: 52,
+        nozzleTemp: 25,
+        targetNozzle: 25,
+        bedTemp: 25,
+        targetBed: 25,
+        timeLeftMins: 28,
+        streamUrl: "https://mars.beechem.site/stream.html?src=mars&mode=webrtc",
+        webUrl: "https://mars.beechem.site/",
+        streamType: "iframe",
+        isResin: true,
+        hasDualCam: false,
+        flipped: false,
         lightOn: true
       }
     ];
@@ -68,10 +121,10 @@ class Kiddy3DApp {
     this.manuals = [
       {
         title: "The Golden Safety Rules",
-        desc: "Read these 4 rules to keep your fingers safe!",
+        desc: "Read these rules to keep your fingers safe and have fun!",
         steps: [
           {
-            title: "Rule 1: Never Touch the Nozzle",
+            title: "Rule 1: Never Touch the Hot Nozzle",
             text: "The nozzle tip gets as hot as a baking oven! Only grown-ups may touch near the nozzle.",
             safety: "hot"
           },
@@ -86,8 +139,13 @@ class Kiddy3DApp {
             safety: "cool"
           },
           {
-            title: "Rule 4: Wash Hands After Making",
-            text: "Always wash your hands with soap after playing with 3D prints, glue sticks, and tools.",
+            title: "Rule 4: Resin is for Grown-ups Only",
+            text: "The Mars 2 Pro uses magic liquid resin. Dad wears safety gloves to touch the resin!",
+            safety: "resin"
+          },
+          {
+            title: "Rule 5: Wash Hands After Making",
+            text: "Always wash your hands with soap after playing with 3D prints, tools, and build plates.",
             safety: "clean"
           }
         ]
@@ -108,7 +166,7 @@ class Kiddy3DApp {
           },
           {
             title: "Step 3: Pick Your File",
-            text: "Choose the toy file on the screen and tap Start Print with a grown-up.",
+            text: "Choose the toy file on the screen and tap Start Print with Dad.",
             safety: "check"
           },
           {
@@ -199,6 +257,12 @@ class Kiddy3DApp {
         emoji: "⚙️"
       },
       {
+        word: "RESIN",
+        syllables: "RES - IN",
+        definition: "Special liquid honey used in the Mars printer that turns solid under blue UV light!",
+        emoji: "🧪"
+      },
+      {
         word: "LAYER",
         syllables: "LAY - ER",
         definition: "One thin slice of plastic. Thousands of layers stack together to make a toy!",
@@ -215,12 +279,6 @@ class Kiddy3DApp {
         syllables: "SPOOL",
         definition: "The big round wheel that holds all your rolled-up plastic string.",
         emoji: "🎡"
-      },
-      {
-        word: "COOLING",
-        syllables: "COOL - ING",
-        definition: "Fans blowing cold air onto the hot plastic so it turns hard instantly.",
-        emoji: "💨"
       }
     ];
 
@@ -265,6 +323,7 @@ class Kiddy3DApp {
     this.renderVideos();
     this.initPWA();
     this.startSimulationTimer();
+    this.tryFetchLiveTelemetry();
   }
 
   // ==================== AUDIO SYNTHESIS & TTS ====================
@@ -391,7 +450,7 @@ class Kiddy3DApp {
 
   loadPrinters() {
     try {
-      const saved = localStorage.getItem("kiddy3d_printers");
+      const saved = localStorage.getItem("kiddy3d_printers_v2");
       if (saved) return JSON.parse(saved);
     } catch (e) {
       console.warn(e);
@@ -400,7 +459,7 @@ class Kiddy3DApp {
   }
 
   savePrinters() {
-    localStorage.setItem("kiddy3d_printers", JSON.stringify(this.printers));
+    localStorage.setItem("kiddy3d_printers_v2", JSON.stringify(this.printers));
   }
 
   getActivePrinter() {
@@ -437,10 +496,18 @@ class Kiddy3DApp {
   selectPrinter(id) {
     this.playChime();
     this.activePrinterId = id;
+    this.activeCameraLens = 'main';
     this.renderPrinterTabs();
     this.updateActivePrinterUI();
     const p = this.getActivePrinter();
     this.speak(`Switched to ${p.name}!`);
+  }
+
+  toggleCameraLens() {
+    this.playClick();
+    this.activeCameraLens = (this.activeCameraLens === 'main') ? 'nozzle' : 'main';
+    this.updateActivePrinterUI();
+    this.speak(this.activeCameraLens === 'nozzle' ? "Zoomed in to nozzle camera!" : "Switched to bed camera!");
   }
 
   updateActivePrinterUI() {
@@ -486,25 +553,59 @@ class Kiddy3DApp {
       kidTimeEl.innerHTML = `<span>⏸️ Paused right now</span> <button class="speak-inline-btn">🔊</button>`;
     }
 
-    // Camera feed vs Simulation
+    // Dual lens toggle button
+    const lensBtn = document.getElementById('cam-lens-toggle-btn');
+    if (lensBtn) {
+      if (p.hasDualCam) {
+        lensBtn.classList.remove('hidden');
+        lensBtn.textContent = (this.activeCameraLens === 'nozzle') ? "🔍 Nozzle Cam" : "🎥 Bed Cam";
+      } else {
+        lensBtn.classList.add('hidden');
+      }
+    }
+
+    // Camera feed vs Simulation vs Iframe
     const liveImg = document.getElementById('live-camera-img');
+    const liveIframe = document.getElementById('live-camera-iframe');
     const simBox = document.getElementById('camera-simulation');
-    if (p.streamUrl && p.streamUrl.trim().length > 0) {
-      liveImg.src = p.streamUrl;
+
+    const streamToLoad = (p.hasDualCam && this.activeCameraLens === 'nozzle' && p.nozzleStreamUrl) 
+      ? p.nozzleStreamUrl 
+      : p.streamUrl;
+
+    if (p.streamType === 'iframe' && p.streamUrl) {
+      liveImg.style.display = 'none';
+      liveIframe.classList.remove('hidden');
+      liveIframe.src = p.streamUrl;
+      simBox.classList.add('hidden');
+    } else if (streamToLoad && streamToLoad.trim().length > 0) {
+      liveIframe.classList.add('hidden');
       liveImg.style.display = 'block';
+      liveImg.src = streamToLoad;
+      // Handle upside-down camera (like Neptune 4 Max)
+      if (p.flipped) {
+        liveImg.style.transform = 'scale(-1, -1)';
+      } else {
+        liveImg.style.transform = 'none';
+      }
       simBox.classList.add('hidden');
     } else {
+      liveIframe.classList.add('hidden');
       liveImg.style.display = 'none';
       simBox.classList.remove('hidden');
     }
 
-    // Nozzle Temp
+    // Nozzle / Tool Temp
     const nozzVal = document.getElementById('nozzle-temp-display');
     const nozzBadge = document.getElementById('nozzle-safety-badge');
     const nozzCard = document.getElementById('nozzle-gauge-card');
     nozzVal.textContent = `${p.nozzleTemp}°C`;
 
-    if (p.nozzleTemp > 50) {
+    if (p.isResin) {
+      nozzBadge.className = "gauge-safety-badge warm";
+      nozzBadge.textContent = "🧪 RESIN VAT: ROOM TEMP";
+      nozzCard.className = "temp-gauge-card";
+    } else if (p.nozzleTemp > 50) {
       nozzBadge.className = "gauge-safety-badge danger";
       nozzBadge.textContent = "⚠️ VERY HOT! NO TOUCH!";
       nozzCard.className = "temp-gauge-card hot";
@@ -520,7 +621,11 @@ class Kiddy3DApp {
     const bedCard = document.getElementById('bed-gauge-card');
     bedVal.textContent = `${p.bedTemp}°C`;
 
-    if (p.bedTemp > 45) {
+    if (p.isResin) {
+      bedBadge.className = "gauge-safety-badge safe";
+      bedBadge.textContent = "✨ UV LIGHT SHIELDED";
+      bedCard.className = "temp-gauge-card";
+    } else if (p.bedTemp > 45) {
       bedBadge.className = "gauge-safety-badge warm";
       bedBadge.textContent = "♨️ WARM BED - BE CAREFUL";
       bedCard.className = "temp-gauge-card warm";
@@ -574,7 +679,7 @@ class Kiddy3DApp {
     const p = this.getActivePrinter();
     p.targetNozzle = 205;
     p.targetBed = 60;
-    p.nozzleTemp = Math.max(p.nozzleTemp, 180);
+    p.nozzleTemp = Math.max(p.nozzleTemp, 185);
     p.bedTemp = Math.max(p.bedTemp, 55);
     this.savePrinters();
     this.updateActivePrinterUI();
@@ -625,7 +730,9 @@ class Kiddy3DApp {
 
   speakNozzleStatus() {
     const p = this.getActivePrinter();
-    if (p.nozzleTemp > 50) {
+    if (p.isResin) {
+      this.speak("Mars 2 Pro uses a cool resin tank. UV light hardens the plastic.");
+    } else if (p.nozzleTemp > 50) {
       this.speak(`Nozzle tip is ${p.nozzleTemp} degrees Celsius. Warning! Very hot! Do not touch!`);
     } else {
       this.speak(`Nozzle tip is ${p.nozzleTemp} degrees Celsius. Cool and safe!`);
@@ -678,6 +785,38 @@ class Kiddy3DApp {
   onCameraError() {
     document.getElementById('live-camera-img').style.display = 'none';
     document.getElementById('camera-simulation').classList.remove('hidden');
+  }
+
+  // ==================== LIVE TELEMETRY POLLING ====================
+  async tryFetchLiveTelemetry() {
+    const token = localStorage.getItem('gate_token');
+    for (const p of this.printers) {
+      if (p.apiUrl) {
+        try {
+          const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+          const res = await fetch(p.apiUrl, { headers });
+          if (res.ok) {
+            const data = await res.json();
+            let st = (data.state || 'ready').toLowerCase();
+            if (st === 'operational') st = 'ready';
+            p.status = st;
+            if (data.job?.file?.name) {
+              p.jobName = data.job.file.name;
+            }
+            if (data.progress?.completion !== undefined) {
+              p.progress = Math.round(data.progress.completion);
+            }
+            if (data.progress?.printTimeLeft) {
+              p.timeLeftMins = Math.round(data.progress.printTimeLeft / 60);
+            }
+          }
+        } catch (e) {
+          // Keep offline simulation values if network/CORS restricts direct fetch
+        }
+      }
+    }
+    this.renderPrinterTabs();
+    this.updateActivePrinterUI();
   }
 
   // ==================== TAB 2: MANUALS & EARLY READING ====================
@@ -770,7 +909,6 @@ class Kiddy3DApp {
   speakWord(element, word) {
     this.playClick();
     element.classList.add('speaking-word');
-    // clean punctuation
     const cleanWord = word.replace(/[.,!?:;]/g, '');
     this.speak(cleanWord, null, () => {
       setTimeout(() => element.classList.remove('speaking-word'), 300);
@@ -1020,8 +1158,8 @@ class Kiddy3DApp {
           <input type="text" placeholder="http://192.168.1.x/webcam/?action=stream" value="${p.streamUrl || ''}" onchange="app.updatePrinterField(${idx}, 'streamUrl', this.value)">
         </div>
         <div class="edit-row">
-          <label>Photo URL / SVG:</label>
-          <input type="text" value="${p.avatar.startsWith('data:') ? 'Default SVG Icon' : p.avatar}" onchange="app.updatePrinterField(${idx}, 'avatar', this.value)">
+          <label>Nozzle Cam URL:</label>
+          <input type="text" placeholder="Nozzle stream URL" value="${p.nozzleStreamUrl || ''}" onchange="app.updatePrinterField(${idx}, 'nozzleStreamUrl', this.value)">
         </div>
         <div class="edit-row">
           <label>Delete:</label>
@@ -1057,7 +1195,7 @@ class Kiddy3DApp {
   }
 
   addNewPrinterPrompt() {
-    const name = prompt("Enter new printer name (e.g. Ender 5, Voron 2.4, etc.):");
+    const name = prompt("Enter new printer name:");
     if (name && name.trim()) {
       const newP = {
         id: `printer-${Date.now()}`,
@@ -1083,7 +1221,7 @@ class Kiddy3DApp {
   }
 
   resetDefaultPrinters() {
-    if (confirm("Reset printers to original factory defaults?")) {
+    if (confirm("Reset printers to Evan Beechem live printer fleet?")) {
       this.printers = JSON.parse(JSON.stringify(this.defaultPrinters));
       this.savePrinters();
       this.renderParentPrinterList();
@@ -1101,6 +1239,7 @@ class Kiddy3DApp {
   // ==================== LIVE SIMULATION LOOP ====================
   startSimulationTimer() {
     setInterval(() => {
+      this.tryFetchLiveTelemetry();
       const p = this.getActivePrinter();
       if (p && p.status === 'printing') {
         if (p.progress < 100) {
