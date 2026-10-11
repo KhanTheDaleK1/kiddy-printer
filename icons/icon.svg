@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+    <linearGradient id="printerBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E2E8F0"/>
+    </linearGradient>
+    <linearGradient id="hotendGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#EF4444"/>
+    </linearGradient>
+    <linearGradient id="printedToy" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#EC4899"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background with friendly rounded corners -->
+  <rect width="512" height="512" rx="110" fill="url(#bg)"/>
+
+  <!-- Printer Base Frame -->
+  <rect x="76" y="100" width="360" height="312" rx="32" fill="#1E293B" opacity="0.3"/>
+  <rect x="80" y="96" width="352" height="304" rx="28" fill="url(#printerBody)" stroke="#0F172A" stroke-width="12"/>
+
+  <!-- Top Frame Beam & Filament Spool -->
+  <rect x="120" y="130" width="272" height="24" rx="8" fill="#334155"/>
+  <circle cx="256" cy="100" r="42" fill="#3B82F6" stroke="#1E293B" stroke-width="10"/>
+  <circle cx="256" cy="100" r="16" fill="#F8FAFC" stroke="#1E293B" stroke-width="6"/>
+
+  <!-- Print Bed -->
+  <rect x="130" y="330" width="252" height="20" rx="8" fill="#F59E0B" stroke="#B45309" stroke-width="6"/>
+
+  <!-- Printed Cute Robot / Dinosaur figure on Bed -->
+  <!-- Cute little friendly robot -->
+  <rect x="220" y="270" width="72" height="60" rx="14" fill="url(#printedToy)"/>
+  <circle cx="238" cy="288" r="7" fill="#FFFFFF"/>
+  <circle cx="274" cy="288" r="7" fill="#FFFFFF"/>
+  <circle cx="238" cy="288" r="3.5" fill="#1E293B"/>
+  <circle cx="274" cy="288" r="3.5" fill="#1E293B"/>
+  <!-- Smile -->
+  <path d="M 244 306 Q 256 316 268 306" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <!-- Little antenna -->
+  <line x1="256" y1="270" x2="256" y2="252" stroke="#EC4899" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="256" cy="248" r="6" fill="#FDE047"/>
+
+  <!-- Hotend / Nozzle Extruder -->
+  <rect x="236" y="180" width="40" height="42" rx="8" fill="#475569" stroke="#1E293B" stroke-width="6"/>
+  <polygon points="248,222 264,222 256,236" fill="url(#hotendGlow)"/>
+
+  <!-- Laser / Filament line -->
+  <line x1="256" y1="142" x2="256" y2="180" stroke="#EC4899" stroke-width="6"/>
+
+  <!-- Happy Star Badge -->
+  <g transform="translate(370, 70)">
+    <circle cx="24" cy="24" r="36" fill="#FBBF24" stroke="#D97706" stroke-width="6"/>
+    <text x="24" y="35" font-family="Arial, sans-serif" font-weight="bold" font-size="34" text-anchor="middle" fill="#78350F">3D</text>
+  </g>
+</svg>

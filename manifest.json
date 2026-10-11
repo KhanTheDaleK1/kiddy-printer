@@ -1,0 +1,30 @@
+{
+  "name": "Kiddy3D - Kid's 3D Printer Guide",
+  "short_name": "Kiddy3D",
+  "description": "Fun, safe 3D printer dashboard and reading companion for young makers",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F0F9FF",
+  "theme_color": "#0284C7",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

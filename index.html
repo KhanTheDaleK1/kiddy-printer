@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Kiddy3D - My 3D Printer Companion</title>
+  
+  <!-- PWA & Apple iPad Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Kiddy3D">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+
+  <!-- Kid-friendly legible Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="touch-device">
+
+  <!-- Top Navigation Bar for iPad -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo" onclick="app.playChime()">
+        <span class="logo-emoji">🚀</span>
+        <div class="logo-text">
+          <span class="title">Kiddy3D</span>
+          <span class="subtitle">Maker Station</span>
+        </div>
+      </div>
+      <button class="tts-pill-btn" onclick="app.speak('Welcome to Kiddy 3D! Let us make something awesome!')" title="Read page title">
+        🔊 <span class="phonetic">Listen</span>
+      </button>
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="nav-tabs" role="tablist">
+      <button class="nav-tab active" data-tab="printers" onclick="app.switchTab('printers')">
+        <span class="tab-icon">🖨️</span>
+        <span class="tab-label">Printers</span>
+      </button>
+      <button class="nav-tab" data-tab="reading" onclick="app.switchTab('reading')">
+        <span class="tab-icon">📖</span>
+        <span class="tab-label">Read Manual</span>
+      </button>
+      <button class="nav-tab" data-tab="words" onclick="app.switchTab('words')">
+        <span class="tab-icon">🔤</span>
+        <span class="tab-label">Word Bank</span>
+      </button>
+      <button class="nav-tab" data-tab="videos" onclick="app.switchTab('videos')">
+        <span class="tab-icon">🎬</span>
+        <span class="tab-label">Videos</span>
+      </button>
+    </nav>
+
+    <!-- Header Actions (Reading Speed, Stars, Parent Zone) -->
+    <div class="header-actions">
+      <!-- Star Rewards Badge -->
+      <div class="stars-counter" onclick="app.celebrateStars()" title="Stars earned today!">
+        <span class="star-icon">⭐</span>
+        <span id="star-count">0</span>
+      </div>
+
+      <!-- Speech Speed Toggle (Bunny vs Turtle) -->
+      <button id="speed-toggle-btn" class="speed-toggle" onclick="app.toggleSpeed()" title="Change voice speed">
+        <span id="speed-icon">🐰</span>
+        <span id="speed-label" class="speed-text">Normal</span>
+      </button>
+
+      <!-- Parent Mode Button -->
+      <button class="parent-lock-btn" onclick="app.openParentModal()" title="Parent Settings">
+        <span>⚙️</span>
+        <span class="parent-btn-text">Parents</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Areas -->
+  <main class="app-main">
+
+    <!-- ==================== TAB 1: PRINTERS DASHBOARD ==================== -->
+    <section id="tab-printers" class="tab-pane active">
+      
+      <!-- Printer Selection Strip / Tabs -->
+      <div class="printer-strip-wrapper">
+        <div class="printer-strip-label">
+          <span>Choose a Printer:</span>
+          <button class="speak-inline-btn" onclick="app.speak('Choose which printer you want to see!')">🔊</button>
+        </div>
+        <div id="printer-tabs-container" class="printer-tabs-strip">
+          <!-- Dynamically populated printer tabs -->
+        </div>
+      </div>
+
+      <!-- Active Printer Main Screen -->
+      <div class="printer-stage-grid">
+        
+        <!-- Left: Live Camera & Visual Progress -->
+        <div class="stage-left-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-icon">📹</span>
+              <h2 id="cam-card-title">Live Camera View</h2>
+            </div>
+            <div class="card-actions">
+              <button class="icon-action-btn" onclick="app.refreshCamera()" title="Refresh Camera Feed">🔄 Refresh</button>
+              <button class="icon-action-btn" onclick="app.toggleCameraFullscreen()" title="Fullscreen Video">⛶ Big View</button>
+              <button class="speak-inline-btn" onclick="app.speak('This is the live camera looking inside your 3D printer!')">🔊</button>
+            </div>
+          </div>
+
+          <!-- Camera Stream Container -->
+          <div id="camera-viewport" class="camera-viewport">
+            <div id="cam-offline-banner" class="cam-badge">LIVE FEED</div>
+            <img id="live-camera-img" class="camera-stream-img" src="" alt="Printer camera stream" onerror="app.onCameraError()">
+            
+            <!-- Fallback animated 3D printing simulation if camera is offline -->
+            <div id="camera-simulation" class="camera-simulation hidden">
+              <div class="sim-stage">
+                <div class="sim-frame">
+                  <!-- Gantry & Extruder -->
+                  <div class="sim-gantry" id="sim-gantry">
+                    <div class="sim-extruder">
+                      <div class="sim-hotend"></div>
+                      <div class="sim-laser-glow"></div>
+                    </div>
+                  </div>
+                  <!-- Printed 3D Model that grows with progress -->
+                  <div class="sim-model" id="sim-model">
+                    <div class="sim-toy-graphic" id="sim-toy-graphic">🤖</div>
+                  </div>
+                  <!-- Heated Bed with Heat Waves -->
+                  <div class="sim-bed">
+                    <div class="heat-waves" id="heat-waves">
+                      <span>♨️</span><span>♨️</span><span>♨️</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="sim-caption">
+                  <span>✨ Camera Simulation Mode (Printer is working!)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Print Job Progress Card -->
+          <div class="progress-box">
+            <div class="progress-info-row">
+              <div class="job-meta">
+                <span class="job-label">Now Printing:</span>
+                <span class="job-name" id="current-job-name">Super Space Rocket 🚀</span>
+              </div>
+              <div class="job-percent-badge" id="job-percent-badge">65%</div>
+            </div>
+
+            <!-- Big Kid-Friendly Progress Bar -->
+            <div class="meter-track">
+              <div class="meter-fill" id="meter-fill" style="width: 65%;">
+                <span class="meter-rocket">🚀</span>
+              </div>
+            </div>
+
+            <div class="time-readout-row">
+              <div class="time-chip">
+                <span>⏱️ Time Left:</span>
+                <strong id="time-left-text">24 minutes</strong>
+              </div>
+              <div class="kid-time-chip" id="kid-time-chip" onclick="app.speakKidTime()">
+                <span>🍿 About 1 cartoon show!</span>
+                <button class="speak-inline-btn">🔊</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Temperature Safety Gauges & Kid-Safe Controls -->
+        <div class="stage-right-card">
+          
+          <!-- Printer Identity & Safety Banner -->
+          <div class="printer-hero-card">
+            <div class="printer-avatar-box">
+              <img id="active-printer-avatar" src="" alt="Printer Photo" class="printer-avatar-img">
+            </div>
+            <div class="printer-hero-details">
+              <h3 id="active-printer-name">Blue Ender 3</h3>
+              <div class="status-pill" id="active-printer-status-pill">
+                <span class="status-dot"></span>
+                <span id="active-printer-status-text">PRINTING</span>
+              </div>
+              <button class="tts-pill-btn mt-1" onclick="app.readPrinterStatus()">
+                🔊 <span class="phonetic">Read Status</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Temperature Gauges: HOT vs SAFE (Reading + Safety Concept) -->
+          <div class="temp-section">
+            <div class="section-title-row">
+              <h4>🌡️ Temperatures (Look & Read!)</h4>
+              <button class="speak-inline-btn" onclick="app.speak('Look at the temperatures! Red means hot, do not touch! Blue means safe to touch!')">🔊</button>
+            </div>
+
+            <div class="temp-gauges-grid">
+              <!-- Nozzle Gauge -->
+              <div class="temp-gauge-card hot" id="nozzle-gauge-card">
+                <div class="gauge-top">
+                  <span class="gauge-emoji">🔥</span>
+                  <span class="gauge-name">Nozzle (Tip)</span>
+                </div>
+                <div class="gauge-val" id="nozzle-temp-display">205°C</div>
+                <div class="gauge-safety-badge danger" id="nozzle-safety-badge">
+                  ⚠️ VERY HOT! NO TOUCH!
+                </div>
+                <button class="speak-inline-btn small" onclick="app.speakNozzleStatus()">🔊 Read</button>
+              </div>
+
+              <!-- Bed Gauge -->
+              <div class="temp-gauge-card warm" id="bed-gauge-card">
+                <div class="gauge-top">
+                  <span class="gauge-emoji">🛏️</span>
+                  <span class="gauge-name">Build Bed</span>
+                </div>
+                <div class="gauge-val" id="bed-temp-display">60°C</div>
+                <div class="gauge-safety-badge warm" id="bed-safety-badge">
+                  ♨️ WARM BED
+                </div>
+                <button class="speak-inline-btn small" onclick="app.speakBedStatus()">🔊 Read</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Light Kid-Safe Management Controls -->
+          <div class="controls-section">
+            <div class="section-title-row">
+              <h4>🕹️ Printer Controls</h4>
+              <button class="speak-inline-btn" onclick="app.speak('Here are your printer buttons. You can pause, turn on the light, or cool it down!')">🔊</button>
+            </div>
+
+            <div class="control-buttons-grid">
+              <!-- Pause / Resume -->
+              <button class="kid-action-btn pause-btn" id="btn-pause-resume" onclick="app.togglePause()">
+                <span class="btn-emoji">⏸️</span>
+                <span class="btn-text" id="pause-btn-text">PAUSE</span>
+              </button>
+
+              <!-- Turn Light On/Off -->
+              <button class="kid-action-btn light-btn" id="btn-toggle-light" onclick="app.toggleChamberLight()">
+                <span class="btn-emoji">💡</span>
+                <span class="btn-text" id="light-btn-text">LIGHT: ON</span>
+              </button>
+
+              <!-- Preheat for PLA -->
+              <button class="kid-action-btn warm-btn" onclick="app.actionPreheat()">
+                <span class="btn-emoji">🌡️</span>
+                <span class="btn-text">WARM UP</span>
+              </button>
+
+              <!-- Cool Down -->
+              <button class="kid-action-btn cool-btn" onclick="app.actionCoolDown()">
+                <span class="btn-emoji">❄️</span>
+                <span class="btn-text">COOL DOWN</span>
+              </button>
+            </div>
+
+            <!-- Danger Zone: Stop Print (Kid Confirmation Protected) -->
+            <button class="kid-action-btn stop-danger-btn" onclick="app.requestStopPrint()">
+              <span class="btn-emoji">🛑</span>
+              <span class="btn-text">STOP PRINT (ASK DAD FIRST)</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ==================== TAB 2: READ MANUALS & CHECKLISTS ==================== -->
+    <section id="tab-reading" class="tab-pane">
+      <div class="reading-header-box">
+        <div class="reading-title-area">
+          <h2>📖 Learn How to Read 3D Printer Manuals</h2>
+          <p>Tap any sentence to hear it read out loud! Watch each word highlight as you read!</p>
+        </div>
+        <button class="tts-pill-btn large" onclick="app.speakCurrentManual()">
+          🔊 <span>Read Entire Page</span>
+        </button>
+      </div>
+
+      <!-- Manual Lessons Tabs -->
+      <div class="manual-picker-strip">
+        <button class="manual-chip active" onclick="app.loadManual(0)">
+          <span>1️⃣</span> Safety Rules
+        </button>
+        <button class="manual-chip" onclick="app.loadManual(1)">
+          <span>2️⃣</span> Pre-Flight Checklist
+        </button>
+        <button class="manual-chip" onclick="app.loadManual(2)">
+          <span>3️⃣</span> Loading Filament
+        </button>
+        <button class="manual-chip" onclick="app.loadManual(3)">
+          <span>4️⃣</span> Removing Finished Prints
+        </button>
+      </div>
+
+      <!-- Interactive Step Reader Container -->
+      <div class="manual-viewer-card" id="manual-viewer-card">
+        <!-- Rendered dynamically by JavaScript with word highlighting -->
+      </div>
+    </section>
+
+
+    <!-- ==================== TAB 3: WORD BANK & PHONICS ==================== -->
+    <section id="tab-words" class="tab-pane">
+      <div class="reading-header-box">
+        <div class="reading-title-area">
+          <h2>🔤 3D Printing Word Bank</h2>
+          <p>Tap a word to hear the sounds, syllables, and see what it means!</p>
+        </div>
+        <button class="tts-pill-btn large" onclick="app.speak('Welcome to the 3D printer word bank! Tap any word card to learn how to say it and read it!')">
+          🔊 <span>Explain Word Bank</span>
+        </button>
+      </div>
+
+      <!-- Word Cards Grid -->
+      <div class="word-cards-grid" id="word-cards-grid">
+        <!-- Dynamic Word Bank Cards -->
+      </div>
+    </section>
+
+
+    <!-- ==================== TAB 4: VIDEO TUTORIALS ==================== -->
+    <section id="tab-videos" class="tab-pane">
+      <div class="reading-header-box">
+        <div class="reading-title-area">
+          <h2>🎬 Fun 3D Printing Videos for Kids</h2>
+          <p>Watch short videos to learn how printers work, how to be safe, and cool maker tricks!</p>
+        </div>
+        <button class="tts-pill-btn large" onclick="app.speak('Here are awesome videos about 3D printing! Tap one to watch!')">
+          🔊 <span>Read Aloud</span>
+        </button>
+      </div>
+
+      <div class="video-cards-grid" id="video-cards-grid">
+        <!-- Dynamically rendered video cards -->
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ==================== STOP PRINT CONFIRMATION MODAL ==================== -->
+  <div id="stop-confirm-modal" class="modal-overlay hidden">
+    <div class="modal-card stop-dialog">
+      <div class="modal-emoji">🛑</div>
+      <h2>Stop This Print?</h2>
+      <p class="modal-desc" id="stop-modal-desc">
+        Are you sure you want to cancel the print? Once you stop, the printer cannot restart this print!
+      </p>
+      <div class="modal-buttons">
+        <button class="btn-cancel" onclick="app.closeStopModal()">
+          ❌ Keep Printing!
+        </button>
+        <button class="btn-confirm-stop" onclick="app.confirmStopPrint()">
+          🛑 Yes, Stop It Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==================== PARENT ZONE & CONFIG MODAL ==================== -->
+  <div id="parent-modal" class="modal-overlay hidden">
+    <div class="modal-card parent-dialog">
+      <div class="modal-top-bar">
+        <h3>🔐 Grown-Up & Parent Settings</h3>
+        <button class="modal-close-btn" onclick="app.closeParentModal()">✕</button>
+      </div>
+
+      <!-- Parent PIN Gate -->
+      <div id="parent-pin-gate" class="pin-gate-view">
+        <p class="gate-hint">Enter Parent PIN (Default is <strong>1234</strong>) or solve: <span id="math-challenge">5 + 3 = ?</span></p>
+        <div class="pin-input-row">
+          <input type="password" id="parent-pin-input" inputmode="numeric" placeholder="PIN" maxlength="4">
+          <button class="btn-primary" onclick="app.verifyParentPin()">Unlock</button>
+        </div>
+      </div>
+
+      <!-- Settings Form (Hidden until unlocked) -->
+      <div id="parent-settings-content" class="parent-settings-content hidden">
+        <div class="settings-tabs-row">
+          <button class="chip-tab active" onclick="app.switchSettingsTab('printers')">Manage Printers</button>
+          <button class="chip-tab" onclick="app.switchSettingsTab('app')">App & Safety</button>
+        </div>
+
+        <div id="settings-tab-printers" class="settings-pane">
+          <div class="printer-editor-header">
+            <h4>Configured 3D Printers</h4>
+            <button class="btn-small-add" onclick="app.addNewPrinterPrompt()">+ Add New Printer</button>
+          </div>
+          <div id="parent-printer-list" class="parent-printer-list">
+            <!-- Dynamic Printer Edit Cards -->
+          </div>
+        </div>
+
+        <div id="settings-tab-app" class="settings-pane hidden">
+          <div class="setting-item">
+            <label><strong>Simulation Mode:</strong> Run cute animations when printer is offline</label>
+            <input type="checkbox" id="cfg-sim-mode" checked onchange="app.saveAppConfig()">
+          </div>
+          <div class="setting-item">
+            <label><strong>Allow Child to Stop Prints:</strong> (Turn off to prevent accidental cancellations)</label>
+            <input type="checkbox" id="cfg-allow-stop" checked onchange="app.saveAppConfig()">
+          </div>
+          <div class="setting-item">
+            <label><strong>Reading Voice Rate:</strong></label>
+            <select id="cfg-voice-rate" onchange="app.saveAppConfig()">
+              <option value="0.8">Slow (Great for Early Readers)</option>
+              <option value="1.0" selected>Normal Speed</option>
+              <option value="1.2">Fast</option>
+            </select>
+          </div>
+          <div class="setting-actions mt-3">
+            <button class="btn-secondary" onclick="app.resetDefaultPrinters()">Reset to Default Demo Printers</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==================== VIDEO PLAYER MODAL ==================== -->
+  <div id="video-player-modal" class="modal-overlay hidden">
+    <div class="modal-card video-dialog">
+      <div class="modal-top-bar">
+        <h3 id="video-modal-title">Tutorial Video</h3>
+        <button class="modal-close-btn" onclick="app.closeVideoModal()">✕ Close</button>
+      </div>
+      <div class="video-frame-container" id="video-frame-container">
+        <!-- iframe inserted dynamically -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Confetti Canvas for Celebrations -->
+  <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+
+  <script src="app.js"></script>
+</body>
+</html>

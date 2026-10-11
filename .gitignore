@@ -1,0 +1,7 @@
+# Local environment and OS files
+GEMINI.md
+.DS_Store
+dist/
+node_modules/
+.env
+.env.local
