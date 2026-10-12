@@ -453,7 +453,7 @@ class Kiddy3DApp {
 
   loadPrinters() {
     try {
-      const saved = localStorage.getItem("kiddy3d_printers_v3");
+      const saved = localStorage.getItem("kiddy3d_printers_v4");
       if (saved) return JSON.parse(saved);
     } catch (e) {
       console.warn(e);
@@ -462,7 +462,7 @@ class Kiddy3DApp {
   }
 
   savePrinters() {
-    localStorage.setItem("kiddy3d_printers_v3", JSON.stringify(this.printers));
+    localStorage.setItem("kiddy3d_printers_v4", JSON.stringify(this.printers));
   }
 
   getActivePrinter() {
@@ -872,13 +872,15 @@ class Kiddy3DApp {
   // ==================== LIVE HARDWARE TELEMETRY ====================
   async tryFetchLiveTelemetry() {
     const token = this.getAuthToken();
+    let updatedAny = false;
+
     for (const p of this.printers) {
       if (p.isResin) continue;
       let gotData = false;
 
       // 1. Try OctoPrint Proxy with Auth
       try {
-        const pRes = await fetch(`https://beechem.site/octoprint-api/printer?printer=${p.typeKey}`, {
+        const pRes = await fetch(`https://beechem.site/octoprint-api/printer?printer=${p.typeKey}&token=${encodeURIComponent(token)}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (pRes.ok) {
@@ -893,10 +895,13 @@ class Kiddy3DApp {
               p.targetBed = Math.round(pData.temperature.bed.target);
             }
             gotData = true;
+            updatedAny = true;
           }
         }
 
-        const jRes = await fetch(`https://beechem.site/octoprint-api/job?printer=${p.typeKey}`);
+        const jRes = await fetch(`https://beechem.site/octoprint-api/job?printer=${p.typeKey}&token=${encodeURIComponent(token)}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (jRes.ok) {
           const jData = await jRes.json();
           if (jData.state) {
@@ -913,8 +918,11 @@ class Kiddy3DApp {
           if (jData.progress?.printTimeLeft) {
             p.timeLeftMins = Math.round(jData.progress.printTimeLeft / 60);
           }
+          updatedAny = true;
         }
-      } catch (_) {}
+      } catch (err) {
+        console.warn(`[Kiddy3D] Proxy fetch warning for ${p.id}:`, err);
+      }
 
       // 2. Direct Moonraker objects query fallback
       if (!gotData && p.apiBase) {
@@ -943,10 +951,16 @@ class Kiddy3DApp {
               if (status.display_status?.progress !== undefined && status.display_status?.progress !== null) {
                 p.progress = Math.round(status.display_status.progress * 100);
               }
+              gotData = true;
+              updatedAny = true;
             }
           }
         } catch (_) {}
       }
+    }
+
+    if (updatedAny) {
+      this.savePrinters();
     }
     this.renderPrinterTabs();
     this.updateActivePrinterUI();
