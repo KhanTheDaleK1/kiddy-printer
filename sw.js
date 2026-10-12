@@ -1,5 +1,5 @@
 // Kiddy3D Service Worker - Offline Caching for iPad PWA
-const CACHE_NAME = 'kiddy3d-v1.0';
+const CACHE_NAME = 'kiddy3d-v2.0';
 
 const ASSETS = [
   './',
