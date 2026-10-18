@@ -1,5 +1,5 @@
 // Kiddy3D Service Worker - Offline Caching for iPad PWA
-const CACHE_NAME = 'kiddy3d-v4.0';
+const CACHE_NAME = 'kiddy3d-v5.0';
 
 const ASSETS = [
   './',
@@ -41,6 +41,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.protocol.startsWith('http') && (
       url.pathname.includes('/webcam') || 
+      url.pathname.includes('/nozzle') || 
       url.pathname.includes('/stream') || 
       url.pathname.includes('/video') ||
       url.hostname.includes('youtube') ||

@@ -30,7 +30,7 @@ class Kiddy3DApp {
         targetBed: 0,
         timeLeftMins: 0,
         streamUrl: "https://maxprint.beechem.site/webcam_ender3/?action=stream",
-        nozzleStreamUrl: "https://maxprint.beechem.site/webcam2_ender3/?action=stream",
+        nozzleStreamUrl: "https://maxprint.beechem.site/nozzle_ender3/?action=stream",
         apiBase: "https://maxprint.beechem.site/Ender3",
         hasDualCam: true,
         flipped: false,
@@ -50,7 +50,7 @@ class Kiddy3DApp {
         targetBed: 0,
         timeLeftMins: 0,
         streamUrl: "https://maxprint.beechem.site/webcam_maxneo/?action=stream",
-        nozzleStreamUrl: "https://maxprint.beechem.site/webcam2_maxneo/?action=stream",
+        nozzleStreamUrl: "https://maxprint.beechem.site/nozzle_maxneo/?action=stream",
         apiBase: "https://maxprint.beechem.site/MaxNeo",
         hasDualCam: true,
         flipped: false,
@@ -453,7 +453,7 @@ class Kiddy3DApp {
 
   loadPrinters() {
     try {
-      const saved = localStorage.getItem("kiddy3d_printers_v4");
+      const saved = localStorage.getItem("kiddy3d_printers_v5");
       if (saved) return JSON.parse(saved);
     } catch (e) {
       console.warn(e);
@@ -462,7 +462,7 @@ class Kiddy3DApp {
   }
 
   savePrinters() {
-    localStorage.setItem("kiddy3d_printers_v4", JSON.stringify(this.printers));
+    localStorage.setItem("kiddy3d_printers_v5", JSON.stringify(this.printers));
   }
 
   getActivePrinter() {
@@ -799,6 +799,8 @@ class Kiddy3DApp {
     this.playAlert();
     this.closeStopModal();
     const p = this.getActivePrinter();
+    this._manualStopPending = this._manualStopPending || {};
+    this._manualStopPending[p.id] = true;
     await this.sendCancel(p);
     p.status = 'ready';
     p.progress = 0;
@@ -842,10 +844,17 @@ class Kiddy3DApp {
   refreshCamera() {
     this.playClick();
     const liveImg = document.getElementById('live-camera-img');
+    const simBox = document.getElementById('camera-simulation');
     const p = this.getActivePrinter();
-    if (p.streamUrl) {
-      const sep = p.streamUrl.includes('?') ? '&' : '?';
-      liveImg.src = `${p.streamUrl}${sep}_t=${Date.now()}`;
+    const streamToLoad = (p.hasDualCam && this.activeCameraLens === 'nozzle' && p.nozzleStreamUrl)
+      ? p.nozzleStreamUrl
+      : p.streamUrl;
+
+    if (streamToLoad) {
+      const sep = streamToLoad.includes('?') ? '&' : '?';
+      simBox.classList.add('hidden');
+      liveImg.style.display = 'block';
+      liveImg.src = `${streamToLoad}${sep}_t=${Date.now()}`;
       this.speak("Camera refreshed!");
     } else {
       this.speak("Camera simulation refreshed!");
@@ -870,6 +879,25 @@ class Kiddy3DApp {
   }
 
   // ==================== LIVE HARDWARE TELEMETRY ====================
+  cleanSpokenText(str) {
+    return (str || '')
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '')
+      .replace(/[_-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  announcePrintFinished(printer, jobName) {
+    this.playChime();
+    setTimeout(() => this.playSuccess(), 250);
+    this.launchConfetti();
+    const cleanJob = this.cleanSpokenText(jobName) || "Print job";
+    const cleanPrinter = this.cleanSpokenText(printer.name.replace(/\(.*?\)/g, '')) || this.cleanSpokenText(printer.name);
+    setTimeout(() => {
+      this.speak(`${cleanJob} finished on ${cleanPrinter}!`);
+    }, 650);
+  }
+
   async tryFetchLiveTelemetry() {
     const token = this.getAuthToken();
     let updatedAny = false;
@@ -877,6 +905,10 @@ class Kiddy3DApp {
     for (const p of this.printers) {
       if (p.isResin) continue;
       let gotData = false;
+      const prevStatus = p.status;
+      const prevProgress = p.progress || 0;
+      const prevJobName = p.jobName;
+      let rawState = '';
 
       // 1. Try OctoPrint Proxy with Auth
       try {
@@ -905,8 +937,9 @@ class Kiddy3DApp {
         if (jRes.ok) {
           const jData = await jRes.json();
           if (jData.state) {
-            let st = jData.state.toLowerCase();
-            if (st === 'operational' || st === 'standby') st = 'ready';
+            rawState = jData.state.toLowerCase();
+            let st = rawState;
+            if (st === 'operational' || st === 'standby' || st === 'complete') st = 'ready';
             p.status = st;
           }
           if (jData.job?.file?.name) {
@@ -941,7 +974,8 @@ class Kiddy3DApp {
                 p.targetBed = Math.round(status.heater_bed.target);
               }
               if (status.print_stats) {
-                let st = (status.print_stats.state || 'standby').toLowerCase();
+                rawState = (status.print_stats.state || 'standby').toLowerCase();
+                let st = rawState;
                 if (st === 'operational' || st === 'standby' || st === 'complete') st = 'ready';
                 p.status = st;
                 if (status.print_stats.filename) {
@@ -956,6 +990,20 @@ class Kiddy3DApp {
             }
           }
         } catch (_) {}
+      }
+
+      // Detect print completion transition
+      const finishedTransition =
+        prevStatus === 'printing' &&
+        p.status === 'ready' &&
+        !this._manualStopPending?.[p.id] &&
+        (rawState === 'complete' || p.progress >= 99 || prevProgress >= 95);
+
+      if (finishedTransition) {
+        this.announcePrintFinished(p, p.jobName || prevJobName);
+      }
+      if (this._manualStopPending?.[p.id] && p.status !== 'printing') {
+        delete this._manualStopPending[p.id];
       }
     }
 
@@ -1305,6 +1353,10 @@ class Kiddy3DApp {
         <div class="edit-row">
           <label>Webcam URL:</label>
           <input type="text" placeholder="http://192.168.1.x/webcam/?action=stream" value="${p.streamUrl || ''}" onchange="app.updatePrinterField(${idx}, 'streamUrl', this.value)">
+        </div>
+        <div class="edit-row">
+          <label>Nozzle Cam URL:</label>
+          <input type="text" placeholder="http://192.168.1.x/nozzle/?action=stream" value="${p.nozzleStreamUrl || ''}" onchange="app.updatePrinterField(${idx}, 'nozzleStreamUrl', this.value)">
         </div>
         <div class="edit-row">
           <label>Moonraker Base:</label>
