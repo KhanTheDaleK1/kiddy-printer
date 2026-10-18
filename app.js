@@ -306,22 +306,22 @@ class Kiddy3DApp {
         emoji: "🤖"
       },
       {
-        title: "3D Printing Safety for Kids",
-        desc: "Fun safety tips: Hot zones, safe zones, and happy printing!",
-        youtubeId: "scF2nI2rY8Y",
+        title: "3D Printers Explained for Kids!",
+        desc: "Join Nat Geo Kids to see how 3D printers turn ideas into real toys!",
+        youtubeId: "HlvK6DLwCz4",
         emoji: "🛡️"
       },
       {
-        title: "The Magic First Layer",
-        desc: "See how the printer squishes the very first line of plastic.",
-        youtubeId: "7q8y1tC0bZs",
+        title: "The Magic First Layer & Extruder",
+        desc: "See up close how gears push plastic filament and squish the first layer!",
+        youtubeId: "iDiosCK4IFg",
         emoji: "👀"
       },
       {
-        title: "What is 3D Filament Made Of?",
-        desc: "Discover how PLA plastic is made from corn and plants!",
-        youtubeId: "3x9p6J3f9x8",
-        emoji: "🌽"
+        title: "How 3D Printing Layers Stack Up",
+        desc: "Learn how 3D printers stack layers just like delicious pancakes!",
+        youtubeId: "Jfoc_-DJMm4",
+        emoji: "🥞"
       }
     ];
 

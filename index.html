@@ -118,8 +118,8 @@
           <!-- Camera Stream Container -->
           <div id="camera-viewport" class="camera-viewport">
             <div id="cam-offline-banner" class="cam-badge">LIVE FEED</div>
-            <img id="live-camera-img" class="camera-stream-img" src="" alt="Printer camera stream" onerror="app.onCameraError()">
-            <iframe id="live-camera-iframe" class="camera-stream-iframe hidden" src="" style="width: 100%; height: 100%; border: none;" scrolling="no"></iframe>
+            <img id="live-camera-img" class="camera-stream-img" alt="Printer camera stream" onerror="window.app && window.app.onCameraError()">
+            <iframe id="live-camera-iframe" class="camera-stream-iframe hidden" style="width: 100%; height: 100%; border: none;" scrolling="no"></iframe>
             
             <!-- Fallback animated 3D printing simulation if camera is offline -->
             <div id="camera-simulation" class="camera-simulation hidden">
@@ -459,6 +459,6 @@
   <!-- Confetti Canvas for Celebrations -->
   <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
 
-  <script src="app.js?v=11"></script>
+  <script src="app.js?v=12"></script>
 </body>
 </html>
