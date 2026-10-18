@@ -1024,58 +1024,11 @@ class Kiddy3DApp {
       const prevJobName = p.jobName;
       let rawState = '';
 
-      // 1. Try OctoPrint Proxy with Auth
-      try {
-        const pRes = await fetch(`https://beechem.site/octoprint-api/printer?printer=${p.typeKey}&token=${encodeURIComponent(token)}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (pRes.ok) {
-          const pData = await pRes.json();
-          if (pData.temperature) {
-            if (pData.temperature.tool0) {
-              p.nozzleTemp = Math.round(pData.temperature.tool0.actual);
-              p.targetNozzle = Math.round(pData.temperature.tool0.target);
-            }
-            if (pData.temperature.bed) {
-              p.bedTemp = Math.round(pData.temperature.bed.actual);
-              p.targetBed = Math.round(pData.temperature.bed.target);
-            }
-            gotData = true;
-            updatedAny = true;
-          }
-        }
-
-        const jRes = await fetch(`https://beechem.site/octoprint-api/job?printer=${p.typeKey}&token=${encodeURIComponent(token)}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (jRes.ok) {
-          const jData = await jRes.json();
-          if (jData.state) {
-            rawState = jData.state.toLowerCase();
-            let st = rawState;
-            if (st === 'operational' || st === 'standby' || st === 'complete') st = 'ready';
-            p.status = st;
-          }
-          if (jData.job?.file?.name) {
-            p.jobName = jData.job.file.name.replace(/\.gcode$/i, '');
-          }
-          if (jData.progress?.completion !== null && jData.progress?.completion !== undefined) {
-            p.progress = Math.round(jData.progress.completion);
-          }
-          if (jData.progress?.printTimeLeft) {
-            p.timeLeftMins = Math.round(jData.progress.printTimeLeft / 60);
-          }
-          updatedAny = true;
-        }
-      } catch (err) {
-        console.warn(`[Kiddy3D] Proxy fetch warning for ${p.id}:`, err);
-      }
-
-      // 2. Direct Moonraker objects query fallback
-      if (!gotData && p.apiBase) {
+      // 1. Direct Moonraker objects query (primary source of truth for Klipper state)
+      if (p.apiBase) {
         try {
           const extraQuery = p.lightMode === 'ad5x' ? '&led%20chamber_led' : '';
-          const mRes = await fetch(`${p.apiBase}/printer/objects/query?display_status&heater_bed&extruder&print_stats${extraQuery}`);
+          const mRes = await fetch(`${p.apiBase}/printer/objects/query?display_status&heater_bed&extruder&print_stats&webhooks${extraQuery}`);
           if (mRes.ok) {
             const mData = await mRes.json();
             const status = mData.result?.status;
@@ -1095,20 +1048,92 @@ class Kiddy3DApp {
               if (status.print_stats) {
                 rawState = (status.print_stats.state || 'standby').toLowerCase();
                 let st = rawState;
-                if (st === 'operational' || st === 'standby' || st === 'complete') st = 'ready';
+                if (
+                  st === 'operational' ||
+                  st === 'standby' ||
+                  st === 'complete' ||
+                  st === 'cancelled' ||
+                  st === 'canceled' ||
+                  st === 'cancelling'
+                ) {
+                  st = 'ready';
+                } else if (st === 'error' && status.webhooks?.state === 'ready') {
+                  st = 'ready';
+                }
                 p.status = st;
-                if (status.print_stats.filename) {
+                if (status.print_stats.filename && p.status === 'printing') {
                   p.jobName = status.print_stats.filename.replace(/\.gcode$/i, '');
+                } else if (p.status === 'ready') {
+                  p.jobName = "Ready for Print";
                 }
               }
               if (status.display_status?.progress !== undefined && status.display_status?.progress !== null) {
-                p.progress = Math.round(status.display_status.progress * 100);
+                p.progress = p.status === 'ready' ? 0 : Math.round(status.display_status.progress * 100);
               }
               gotData = true;
               updatedAny = true;
             }
           }
         } catch (_) {}
+      }
+
+      // 2. Fallback to OctoPrint Proxy with Auth
+      if (!gotData) {
+        try {
+          const pRes = await fetch(`https://beechem.site/octoprint-api/printer?printer=${p.typeKey}&token=${encodeURIComponent(token)}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (pRes.ok) {
+            const pData = await pRes.json();
+            if (pData.temperature) {
+              if (pData.temperature.tool0) {
+                p.nozzleTemp = Math.round(pData.temperature.tool0.actual);
+                p.targetNozzle = Math.round(pData.temperature.tool0.target);
+              }
+              if (pData.temperature.bed) {
+                p.bedTemp = Math.round(pData.temperature.bed.actual);
+                p.targetBed = Math.round(pData.temperature.bed.target);
+              }
+              gotData = true;
+              updatedAny = true;
+            }
+          }
+
+          const jRes = await fetch(`https://beechem.site/octoprint-api/job?printer=${p.typeKey}&token=${encodeURIComponent(token)}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (jRes.ok) {
+            const jData = await jRes.json();
+            if (jData.state) {
+              rawState = jData.state.toLowerCase();
+              let st = rawState;
+              if (
+                st === 'operational' ||
+                st === 'standby' ||
+                st === 'complete' ||
+                st === 'cancelled' ||
+                st === 'canceled' ||
+                st === 'cancelling' ||
+                st === 'error'
+              ) {
+                st = 'ready';
+              }
+              p.status = st;
+            }
+            if (jData.job?.file?.name) {
+              p.jobName = jData.job.file.name.replace(/\.gcode$/i, '');
+            }
+            if (jData.progress?.completion !== null && jData.progress?.completion !== undefined) {
+              p.progress = Math.round(jData.progress.completion);
+            }
+            if (jData.progress?.printTimeLeft) {
+              p.timeLeftMins = Math.round(jData.progress.printTimeLeft / 60);
+            }
+            updatedAny = true;
+          }
+        } catch (err) {
+          console.warn(`[Kiddy3D] Proxy fetch warning for ${p.id}:`, err);
+        }
       }
 
       // Detect warm-up start (once per print / heating cycle)
