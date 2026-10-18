@@ -19,8 +19,9 @@ class Kiddy3DApp {
       {
         id: "ender3",
         typeKey: "octo",
-        name: "Ender 3 (Little Blue 🛠️)",
-        avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230284C7'/><rect x='16' y='18' width='68' height='64' rx='8' fill='%231E293B'/><rect x='24' y='64' width='52' height='8' fill='%2338BDF8'/><rect x='44' y='32' width='12' height='16' fill='%23F59E0B'/><polygon points='46,48 54,48 50,56' fill='%23EF4444'/><circle cx='80' cy='24' r='8' fill='%2338BDF8'/></svg>",
+        name: "Ender 3",
+        color: "#EF4444",
+        avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23EF4444'/><rect x='16' y='18' width='68' height='64' rx='8' fill='%23450A0A'/><rect x='24' y='64' width='52' height='8' fill='%23F87171'/><rect x='44' y='32' width='12' height='16' fill='%23FCA5A5'/><polygon points='46,48 54,48 50,56' fill='%23FBBF24'/><circle cx='80' cy='24' r='8' fill='%23FCA5A5'/></svg>",
         status: "ready",
         jobName: "Ready for Print",
         progress: 0,
@@ -39,8 +40,9 @@ class Kiddy3DApp {
       {
         id: "maxneo",
         typeKey: "max",
-        name: "Max Neo (Big Brother 🦾)",
-        avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23D97706'/><rect x='14' y='14' width='72' height='72' rx='10' fill='%230F172A'/><rect x='20' y='68' width='60' height='8' fill='%23F59E0B'/><rect x='42' y='28' width='16' height='20' fill='%2364748B'/><polygon points='46,48 54,48 50,58' fill='%23EF4444'/><circle cx='82' cy='20' r='10' fill='%23FBBF24'/></svg>",
+        name: "Ender 3 Max Neo",
+        color: "#F97316",
+        avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23F97316'/><rect x='14' y='14' width='72' height='72' rx='10' fill='%23431407'/><rect x='20' y='68' width='60' height='8' fill='%23FB923C'/><rect x='42' y='28' width='16' height='20' fill='%23FDBA74'/><polygon points='46,48 54,48 50,58' fill='%23EF4444'/><circle cx='82' cy='20' r='10' fill='%23FDBA74'/></svg>",
         status: "ready",
         jobName: "Ready for Print",
         progress: 0,
@@ -58,9 +60,30 @@ class Kiddy3DApp {
         lightOn: false
       },
       {
+        id: "neptune",
+        typeKey: "neptune",
+        name: "Neptune 4 Max",
+        color: "#EAB308",
+        avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23EAB308'/><rect x='12' y='16' width='76' height='68' rx='8' fill='%23422006'/><rect x='18' y='68' width='64' height='10' fill='%23FACC15'/><path d='M 30 78 Q 50 68 70 78' stroke='%23FEF08A' stroke-width='4' fill='none'/><rect x='44' y='30' width='12' height='18' fill='%23FEF9C3'/></svg>",
+        status: "ready",
+        jobName: "Ready for Print",
+        progress: 0,
+        nozzleTemp: 26,
+        targetNozzle: 0,
+        bedTemp: 22,
+        targetBed: 0,
+        timeLeftMins: 0,
+        streamUrl: "https://neptune.beechem.site/webcam/?action=stream",
+        apiBase: "https://neptune.beechem.site",
+        hasDualCam: false,
+        flipped: true,
+        lightOn: false
+      },
+      {
         id: "ad5x",
         typeKey: "ad5x",
-        name: "AD5X (Speed Cube ⚡)",
+        name: "AD5X",
+        color: "#10B981",
         avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2310B981'/><rect x='18' y='18' width='64' height='64' rx='12' fill='%23064E3B'/><rect x='28' y='28' width='44' height='44' rx='8' fill='%23047857'/><circle cx='50' cy='50' r='14' fill='%2334D399'/><polygon points='46,42 58,50 46,58' fill='%23064E3B'/></svg>",
         status: "ready",
         jobName: "Ready for Print",
@@ -77,29 +100,11 @@ class Kiddy3DApp {
         lightOn: false
       },
       {
-        id: "neptune",
-        typeKey: "neptune",
-        name: "Neptune 4 Max (Giant Neptune 🌊)",
-        avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2306B6D4'/><rect x='12' y='16' width='76' height='68' rx='8' fill='%23164E63'/><rect x='18' y='68' width='64' height='10' fill='%2322D3EE'/><path d='M 30 78 Q 50 68 70 78' stroke='%230891B2' stroke-width='4' fill='none'/><rect x='44' y='30' width='12' height='18' fill='%23E0F2FE'/></svg>",
-        status: "ready",
-        jobName: "Ready for Print",
-        progress: 0,
-        nozzleTemp: 26,
-        targetNozzle: 0,
-        bedTemp: 22,
-        targetBed: 0,
-        timeLeftMins: 0,
-        streamUrl: "https://neptune.beechem.site/webcam/?action=stream",
-        apiBase: "https://neptune.beechem.site",
-        hasDualCam: false,
-        flipped: true,
-        lightOn: false
-      },
-      {
         id: "mars",
         typeKey: "mars",
-        name: "Mars 2 Pro (Magic Resin 🧪)",
-        avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23E11D48'/><rect x='22' y='52' width='56' height='34' rx='6' fill='%23881337'/><path d='M 24 52 Q 50 14 76 52 Z' fill='%23FB7185' opacity='0.85'/><circle cx='50' cy='42' r='8' fill='%23F43F5E'/></svg>",
+        name: "Mars 2 Pro",
+        color: "#0284C7",
+        avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230284C7'/><rect x='22' y='52' width='56' height='34' rx='6' fill='%230C4A6E'/><path d='M 24 52 Q 50 14 76 52 Z' fill='%2338BDF8' opacity='0.85'/><circle cx='50' cy='42' r='8' fill='%237DD3FC'/></svg>",
         status: "ready",
         jobName: "Resin Vat Ready",
         progress: 0,
@@ -454,7 +459,7 @@ class Kiddy3DApp {
 
   loadPrinters() {
     try {
-      const saved = localStorage.getItem("kiddy3d_printers_v7");
+      const saved = localStorage.getItem("kiddy3d_printers_v8");
       if (saved) return JSON.parse(saved);
     } catch (e) {
       console.warn(e);
@@ -463,7 +468,7 @@ class Kiddy3DApp {
   }
 
   savePrinters() {
-    localStorage.setItem("kiddy3d_printers_v7", JSON.stringify(this.printers));
+    localStorage.setItem("kiddy3d_printers_v8", JSON.stringify(this.printers));
   }
 
   getActivePrinter() {
@@ -477,7 +482,14 @@ class Kiddy3DApp {
 
     this.printers.forEach(printer => {
       const card = document.createElement('div');
-      card.className = `printer-tab-card ${printer.id === this.activePrinterId ? 'active' : ''}`;
+      const isActive = printer.id === this.activePrinterId;
+      card.className = `printer-tab-card ${isActive ? 'active' : ''}`;
+      if (printer.color) {
+        card.style.borderColor = printer.color;
+        if (isActive) {
+          card.style.boxShadow = `0 8px 18px ${printer.color}40`;
+        }
+      }
       card.onclick = () => this.selectPrinter(printer.id);
 
       const statusClass = `status-${printer.status}`;
@@ -522,6 +534,10 @@ class Kiddy3DApp {
     // Header info
     document.getElementById('active-printer-name').textContent = p.name;
     document.getElementById('active-printer-avatar').src = p.avatar;
+    const heroCard = document.querySelector('.printer-hero-card');
+    if (heroCard && p.color) {
+      heroCard.style.borderColor = p.color;
+    }
 
     const statusPill = document.getElementById('active-printer-status-pill');
     const statusText = document.getElementById('active-printer-status-text');
