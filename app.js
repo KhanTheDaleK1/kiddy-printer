@@ -780,11 +780,11 @@ class Kiddy3DApp {
   }
 
   async actionPreheat() {
-    this.playClick();
     const p = this.getActivePrinter();
     p.targetNozzle = 205;
     p.targetBed = 60;
-    this.speak("Sent warm up command! Heating nozzle to 205 degrees. Hot! No touch!");
+    p._warmupAnnounced = true;
+    this.announcePrinterWarmup(p, 205);
     await this.sendGcode(p, "M104 S205\nM140 S60");
     this.updateActivePrinterUI();
     setTimeout(() => this.tryFetchLiveTelemetry(), 1500);
@@ -795,6 +795,7 @@ class Kiddy3DApp {
     const p = this.getActivePrinter();
     p.targetNozzle = 0;
     p.targetBed = 0;
+    p._warmupAnnounced = false;
     this.speak("Cooling down! Turning off heaters to make it safe to touch!");
     await this.sendGcode(p, "M104 S0\nM140 S0");
     this.updateActivePrinterUI();
@@ -822,6 +823,7 @@ class Kiddy3DApp {
     p.status = 'ready';
     p.progress = 0;
     p.timeLeftMins = 0;
+    p._warmupAnnounced = false;
     this.updateActivePrinterUI();
     this.speak("Print canceled. The printer is resting now.");
     setTimeout(() => this.tryFetchLiveTelemetry(), 1500);
@@ -902,6 +904,20 @@ class Kiddy3DApp {
       .replace(/[_-]+/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
+  }
+
+  playWarmupAlert() {
+    // Gentle, non-alarming two-tone warm marimba-like chime (G4 -> B4)
+    this.playTone(392.00, 'sine', 0.22, 0.16);
+    setTimeout(() => this.playTone(493.88, 'sine', 0.28, 0.16), 160);
+  }
+
+  announcePrinterWarmup(printer, setTemp) {
+    this.playWarmupAlert();
+    const cleanPrinter = this.cleanSpokenText(printer.name);
+    setTimeout(() => {
+      this.speak(`Caution, ${cleanPrinter} is warming up to ${setTemp} degrees!`);
+    }, 500);
   }
 
   announcePrintFinished(printer, jobName) {
@@ -1009,6 +1025,22 @@ class Kiddy3DApp {
         } catch (_) {}
       }
 
+      // Detect warm-up start (once per print / heating cycle)
+      const nozzleHeating = p.targetNozzle > 0 && p.nozzleTemp < p.targetNozzle - 5;
+      const bedHeating = p.targetBed > 0 && p.bedTemp < p.targetBed - 5;
+      const isAtOperatingTemp =
+        (p.targetNozzle > 0 && p.nozzleTemp >= p.targetNozzle - 5) ||
+        (p.targetNozzle === 0 && p.targetBed > 0 && p.bedTemp >= p.targetBed - 5);
+
+      if (!p._warmupAnnounced && (nozzleHeating || bedHeating)) {
+        const setTemp = p.targetNozzle > 0 ? p.targetNozzle : p.targetBed;
+        p._warmupAnnounced = true;
+        this.announcePrinterWarmup(p, setTemp);
+      } else if (!p._warmupAnnounced && isAtOperatingTemp) {
+        // Already at operating temperature (e.g. app opened mid-print); mark as announced silently
+        p._warmupAnnounced = true;
+      }
+
       // Detect print completion transition
       const finishedTransition =
         prevStatus === 'printing' &&
@@ -1017,8 +1049,13 @@ class Kiddy3DApp {
         (rawState === 'complete' || p.progress >= 99 || prevProgress >= 95);
 
       if (finishedTransition) {
+        p._warmupAnnounced = false;
         this.announcePrintFinished(p, p.jobName || prevJobName);
+      } else if (p.status !== 'printing' && p.status !== 'paused' && p.targetNozzle === 0 && p.targetBed === 0) {
+        // Reset warm-up flag once heaters are off and printer is idle
+        p._warmupAnnounced = false;
       }
+
       if (this._manualStopPending?.[p.id] && p.status !== 'printing') {
         delete this._manualStopPending[p.id];
       }
