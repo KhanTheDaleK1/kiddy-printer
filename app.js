@@ -53,7 +53,8 @@ class Kiddy3DApp {
         nozzleStreamUrl: "https://maxprint.beechem.site/nozzle_maxneo/?action=stream",
         apiBase: "https://maxprint.beechem.site/MaxNeo",
         hasDualCam: true,
-        flipped: false,
+        flipped: true,
+        nozzleFlipped: false,
         lightOn: false
       },
       {
@@ -453,7 +454,7 @@ class Kiddy3DApp {
 
   loadPrinters() {
     try {
-      const saved = localStorage.getItem("kiddy3d_printers_v5");
+      const saved = localStorage.getItem("kiddy3d_printers_v6");
       if (saved) return JSON.parse(saved);
     } catch (e) {
       console.warn(e);
@@ -462,7 +463,7 @@ class Kiddy3DApp {
   }
 
   savePrinters() {
-    localStorage.setItem("kiddy3d_printers_v5", JSON.stringify(this.printers));
+    localStorage.setItem("kiddy3d_printers_v6", JSON.stringify(this.printers));
   }
 
   getActivePrinter() {
@@ -573,9 +574,9 @@ class Kiddy3DApp {
     const liveIframe = document.getElementById('live-camera-iframe');
     const simBox = document.getElementById('camera-simulation');
 
-    const streamToLoad = (p.hasDualCam && this.activeCameraLens === 'nozzle' && p.nozzleStreamUrl) 
-      ? p.nozzleStreamUrl 
-      : p.streamUrl;
+    const isNozzleLens = p.hasDualCam && this.activeCameraLens === 'nozzle' && p.nozzleStreamUrl;
+    const streamToLoad = isNozzleLens ? p.nozzleStreamUrl : p.streamUrl;
+    const shouldFlip = isNozzleLens ? Boolean(p.nozzleFlipped) : Boolean(p.flipped);
 
     if (p.streamType === 'iframe' && p.streamUrl) {
       liveImg.style.display = 'none';
@@ -586,7 +587,7 @@ class Kiddy3DApp {
       liveIframe.classList.add('hidden');
       liveImg.style.display = 'block';
       liveImg.src = streamToLoad;
-      if (p.flipped) {
+      if (shouldFlip) {
         liveImg.style.transform = 'scale(-1, -1)';
       } else {
         liveImg.style.transform = 'none';
