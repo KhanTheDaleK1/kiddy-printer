@@ -34,6 +34,7 @@ class Kiddy3DApp {
         nozzleStreamUrl: "https://maxprint.beechem.site/nozzle_ender3/?action=stream",
         apiBase: "https://maxprint.beechem.site/Ender3",
         hasDualCam: true,
+        hasLight: false,
         flipped: false,
         lightOn: false
       },
@@ -55,6 +56,7 @@ class Kiddy3DApp {
         nozzleStreamUrl: "https://maxprint.beechem.site/nozzle_maxneo/?action=stream",
         apiBase: "https://maxprint.beechem.site/MaxNeo",
         hasDualCam: true,
+        hasLight: false,
         flipped: false,
         nozzleFlipped: true,
         lightOn: false
@@ -76,6 +78,8 @@ class Kiddy3DApp {
         streamUrl: "https://neptune.beechem.site/webcam/?action=stream",
         apiBase: "https://neptune.beechem.site",
         hasDualCam: false,
+        hasLight: true,
+        lightMode: "neptune",
         flipped: true,
         lightOn: false
       },
@@ -96,8 +100,10 @@ class Kiddy3DApp {
         streamUrl: "https://ad5x.beechem.site/webcam/?action=stream",
         apiBase: "https://ad5x.beechem.site",
         hasDualCam: false,
+        hasLight: true,
+        lightMode: "ad5x",
         flipped: false,
-        lightOn: false
+        lightOn: true
       },
       {
         id: "mars",
@@ -459,7 +465,7 @@ class Kiddy3DApp {
 
   loadPrinters() {
     try {
-      const saved = localStorage.getItem("kiddy3d_printers_v8");
+      const saved = localStorage.getItem("kiddy3d_printers_v9");
       if (saved) return JSON.parse(saved);
     } catch (e) {
       console.warn(e);
@@ -468,7 +474,7 @@ class Kiddy3DApp {
   }
 
   savePrinters() {
-    localStorage.setItem("kiddy3d_printers_v8", JSON.stringify(this.printers));
+    localStorage.setItem("kiddy3d_printers_v9", JSON.stringify(this.printers));
   }
 
   getActivePrinter() {
@@ -674,7 +680,7 @@ class Kiddy3DApp {
       bedCard.className = "temp-gauge-card";
     }
 
-    // Controls label
+    // Controls label & per-printer visibility
     const pauseBtnText = document.getElementById('pause-btn-text');
     if (p.status === 'paused') {
       pauseBtnText.textContent = "RESUME ▶️";
@@ -682,8 +688,20 @@ class Kiddy3DApp {
       pauseBtnText.textContent = "PAUSE ⏸️";
     }
 
+    const lightBtn = document.getElementById('btn-toggle-light');
     const lightBtnText = document.getElementById('light-btn-text');
-    lightBtnText.textContent = p.lightOn ? "LIGHT: ON 💡" : "LIGHT: OFF 🌑";
+    if (lightBtn) {
+      if (p.hasLight) {
+        lightBtn.classList.remove('hidden');
+        if (p.lightMode === 'neptune') {
+          lightBtnText.textContent = "TOGGLE LIGHTS";
+        } else {
+          lightBtnText.textContent = p.lightOn ? "LIGHT: ON" : "LIGHT: OFF";
+        }
+      } else {
+        lightBtn.classList.add('hidden');
+      }
+    }
   }
 
   // ==================== ACTUAL HARDWARE CONTROLS ====================
@@ -709,6 +727,19 @@ class Kiddy3DApp {
       } catch (_) {}
     }
     return false;
+  }
+
+  async sendHome(printer) {
+    const token = this.getAuthToken();
+    try {
+      const res = await fetch(`https://beechem.site/octoprint-api/home?printer=${printer.typeKey}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) return true;
+    } catch (_) {}
+
+    return await this.sendGcode(printer, "G28");
   }
 
   async sendPause(printer) {
@@ -786,16 +817,42 @@ class Kiddy3DApp {
     setTimeout(() => this.tryFetchLiveTelemetry(), 1000);
   }
 
+  async actionHomePrinter() {
+    this.playClick();
+    const p = this.getActivePrinter();
+    if (p.status === 'printing') {
+      this.playAlert();
+      this.speak("Cannot home while the printer is busy printing!");
+      return;
+    }
+    this.speak(`Homing ${p.name}! Watch the nozzle move to its home corner. Keep hands clear!`);
+    await this.sendHome(p);
+    setTimeout(() => this.tryFetchLiveTelemetry(), 1500);
+  }
+
   async toggleChamberLight() {
     this.playClick();
     const p = this.getActivePrinter();
+    if (!p.hasLight) return;
+
     p.lightOn = !p.lightOn;
-    const gcode = p.lightOn 
-      ? "SET_PIN PIN=caselight VALUE=1\nSET_LED LED=chamber VALUE=1\nM355 S1" 
-      : "SET_PIN PIN=caselight VALUE=0\nSET_LED LED=chamber VALUE=0\nM355 S0";
+    let gcode = "";
+    if (p.lightMode === "ad5x") {
+      gcode = p.lightOn ? "LED_ON" : "LED_OFF";
+    } else if (p.lightMode === "neptune") {
+      gcode = "FLASHLIGHT_SWITCH\nMODLELIGHT_SWITCH";
+    } else {
+      gcode = p.lightOn
+        ? "SET_PIN PIN=caselight VALUE=1\nSET_LED LED=chamber VALUE=1\nM355 S1"
+        : "SET_PIN PIN=caselight VALUE=0\nSET_LED LED=chamber VALUE=0\nM355 S0";
+    }
     await this.sendGcode(p, gcode);
     this.updateActivePrinterUI();
-    this.speak(p.lightOn ? "Turning printer light ON!" : "Turning printer light OFF!");
+    if (p.lightMode === "neptune") {
+      this.speak(`Switched ${p.name} lights!`);
+    } else {
+      this.speak(p.lightOn ? "Turning printer light ON!" : "Turning printer light OFF!");
+    }
   }
 
   async actionPreheat() {
@@ -1017,7 +1074,8 @@ class Kiddy3DApp {
       // 2. Direct Moonraker objects query fallback
       if (!gotData && p.apiBase) {
         try {
-          const mRes = await fetch(`${p.apiBase}/printer/objects/query?display_status&heater_bed&extruder&print_stats`);
+          const extraQuery = p.lightMode === 'ad5x' ? '&led%20chamber_led' : '';
+          const mRes = await fetch(`${p.apiBase}/printer/objects/query?display_status&heater_bed&extruder&print_stats${extraQuery}`);
           if (mRes.ok) {
             const mData = await mRes.json();
             const status = mData.result?.status;
@@ -1029,6 +1087,10 @@ class Kiddy3DApp {
               if (status.heater_bed) {
                 p.bedTemp = Math.round(status.heater_bed.temperature);
                 p.targetBed = Math.round(status.heater_bed.target);
+              }
+              if (status['led chamber_led']?.color_data?.[0]) {
+                const c = status['led chamber_led'].color_data[0];
+                p.lightOn = c.some(v => v > 0);
               }
               if (status.print_stats) {
                 rawState = (status.print_stats.state || 'standby').toLowerCase();

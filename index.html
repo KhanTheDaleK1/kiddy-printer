@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body class="touch-device">
 
@@ -250,8 +250,14 @@
                 <span class="btn-text" id="pause-btn-text">PAUSE</span>
               </button>
 
-              <!-- Turn Light On/Off -->
-              <button class="kid-action-btn light-btn" id="btn-toggle-light" onclick="app.toggleChamberLight()">
+              <!-- Home All Axes -->
+              <button class="kid-action-btn home-btn" id="btn-home-printer" onclick="app.actionHomePrinter()">
+                <span class="btn-emoji">🏠</span>
+                <span class="btn-text" id="home-btn-text">HOME</span>
+              </button>
+
+              <!-- Turn Light On/Off (Shown only for printers with lights) -->
+              <button class="kid-action-btn light-btn hidden" id="btn-toggle-light" onclick="app.toggleChamberLight()">
                 <span class="btn-emoji">💡</span>
                 <span class="btn-text" id="light-btn-text">LIGHT: ON</span>
               </button>
@@ -453,6 +459,6 @@
   <!-- Confetti Canvas for Celebrations -->
   <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
 
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>

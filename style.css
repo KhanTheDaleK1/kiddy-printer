@@ -912,6 +912,12 @@ body {
   color: #92400e;
 }
 
+.home-btn {
+  background: #eff6ff;
+  border: 2px solid #3b82f6;
+  color: #1e40af;
+}
+
 .light-btn {
   background: #f0fdf4;
   border: 2px solid #22c55e;
