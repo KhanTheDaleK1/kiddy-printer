@@ -53,8 +53,8 @@ class Kiddy3DApp {
         nozzleStreamUrl: "https://maxprint.beechem.site/nozzle_maxneo/?action=stream",
         apiBase: "https://maxprint.beechem.site/MaxNeo",
         hasDualCam: true,
-        flipped: true,
-        nozzleFlipped: false,
+        flipped: false,
+        nozzleFlipped: true,
         lightOn: false
       },
       {
@@ -454,7 +454,7 @@ class Kiddy3DApp {
 
   loadPrinters() {
     try {
-      const saved = localStorage.getItem("kiddy3d_printers_v6");
+      const saved = localStorage.getItem("kiddy3d_printers_v7");
       if (saved) return JSON.parse(saved);
     } catch (e) {
       console.warn(e);
@@ -463,7 +463,7 @@ class Kiddy3DApp {
   }
 
   savePrinters() {
-    localStorage.setItem("kiddy3d_printers_v6", JSON.stringify(this.printers));
+    localStorage.setItem("kiddy3d_printers_v7", JSON.stringify(this.printers));
   }
 
   getActivePrinter() {
