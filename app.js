@@ -493,7 +493,7 @@ class Kiddy3DApp {
       card.onclick = () => this.selectPrinter(printer.id);
 
       const statusClass = `status-${printer.status}`;
-      const statusLabel = printer.status.toUpperCase();
+      const statusLabel = printer.isResin ? 'CAMERA VIEW' : printer.status.toUpperCase();
 
       card.innerHTML = `
         <img src="${printer.avatar}" alt="${printer.name}" class="printer-tab-photo">
@@ -501,7 +501,7 @@ class Kiddy3DApp {
           <span class="printer-tab-title">${printer.name}</span>
           <span class="printer-tab-status ${statusClass}">
             <span class="status-dot"></span>
-            ${statusLabel} ${printer.status === 'printing' ? `(${printer.progress}%)` : ''}
+            ${statusLabel} ${!printer.isResin && printer.status === 'printing' ? `(${printer.progress}%)` : ''}
           </span>
         </div>
       `;
@@ -537,6 +537,23 @@ class Kiddy3DApp {
     const heroCard = document.querySelector('.printer-hero-card');
     if (heroCard && p.color) {
       heroCard.style.borderColor = p.color;
+    }
+
+    const stageGrid = document.querySelector('.printer-stage-grid');
+    const rightCard = document.querySelector('.stage-right-card');
+    const progressBox = document.querySelector('.progress-box');
+    const camTitle = document.getElementById('cam-card-title');
+
+    if (p.isResin) {
+      if (rightCard) rightCard.classList.add('hidden');
+      if (progressBox) progressBox.classList.add('hidden');
+      if (stageGrid) stageGrid.style.gridTemplateColumns = '1fr';
+      if (camTitle) camTitle.textContent = `${p.name} - Live Camera View`;
+    } else {
+      if (rightCard) rightCard.classList.remove('hidden');
+      if (progressBox) progressBox.classList.remove('hidden');
+      if (stageGrid) stageGrid.style.gridTemplateColumns = '';
+      if (camTitle) camTitle.textContent = 'Live Camera View';
     }
 
     const statusPill = document.getElementById('active-printer-status-pill');
@@ -597,7 +614,9 @@ class Kiddy3DApp {
     if (p.streamType === 'iframe' && p.streamUrl) {
       liveImg.style.display = 'none';
       liveIframe.classList.remove('hidden');
-      liveIframe.src = p.streamUrl;
+      if (liveIframe.src !== p.streamUrl) {
+        liveIframe.src = p.streamUrl;
+      }
       simBox.classList.add('hidden');
     } else if (streamToLoad && streamToLoad.trim().length > 0) {
       liveIframe.classList.add('hidden');
@@ -863,13 +882,18 @@ class Kiddy3DApp {
   refreshCamera() {
     this.playClick();
     const liveImg = document.getElementById('live-camera-img');
+    const liveIframe = document.getElementById('live-camera-iframe');
     const simBox = document.getElementById('camera-simulation');
     const p = this.getActivePrinter();
     const streamToLoad = (p.hasDualCam && this.activeCameraLens === 'nozzle' && p.nozzleStreamUrl)
       ? p.nozzleStreamUrl
       : p.streamUrl;
 
-    if (streamToLoad) {
+    if (p.streamType === 'iframe' && p.streamUrl) {
+      const sep = p.streamUrl.includes('?') ? '&' : '?';
+      liveIframe.src = `${p.streamUrl}${sep}_t=${Date.now()}`;
+      this.speak("Camera refreshed!");
+    } else if (streamToLoad) {
       const sep = streamToLoad.includes('?') ? '&' : '?';
       simBox.classList.add('hidden');
       liveImg.style.display = 'block';
