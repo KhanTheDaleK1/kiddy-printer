@@ -1013,11 +1013,13 @@ class Kiddy3DApp {
   }
 
   async tryFetchLiveTelemetry() {
-    const token = this.getAuthToken();
+    if (document.hidden) return;
     let updatedAny = false;
+    const now = Date.now();
 
     for (const p of this.printers) {
       if (p.isResin) continue;
+      if (p._backoffUntil && now < p._backoffUntil) continue;
       let gotData = false;
       const prevStatus = p.status;
       const prevProgress = p.progress || 0;
@@ -1072,17 +1074,17 @@ class Kiddy3DApp {
               }
               gotData = true;
               updatedAny = true;
+              p._failCount = 0;
+              p._backoffUntil = 0;
             }
           }
         } catch (_) {}
       }
 
-      // 2. Fallback to OctoPrint Proxy with Auth
+      // 2. Fallback to OctoPrint Proxy (simple GET without custom headers to avoid CORS preflight)
       if (!gotData) {
         try {
-          const pRes = await fetch(`https://beechem.site/octoprint-api/printer?printer=${p.typeKey}&token=${encodeURIComponent(token)}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
+          const pRes = await fetch(`https://beechem.site/octoprint-api/printer?printer=${p.typeKey}`);
           if (pRes.ok) {
             const pData = await pRes.json();
             if (pData.temperature) {
@@ -1099,39 +1101,46 @@ class Kiddy3DApp {
             }
           }
 
-          const jRes = await fetch(`https://beechem.site/octoprint-api/job?printer=${p.typeKey}&token=${encodeURIComponent(token)}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          if (jRes.ok) {
-            const jData = await jRes.json();
-            if (jData.state) {
-              rawState = jData.state.toLowerCase();
-              let st = rawState;
-              if (
-                st === 'operational' ||
-                st === 'standby' ||
-                st === 'complete' ||
-                st === 'cancelled' ||
-                st === 'canceled' ||
-                st === 'cancelling' ||
-                st === 'error'
-              ) {
-                st = 'ready';
+          if (gotData) {
+            const jRes = await fetch(`https://beechem.site/octoprint-api/job?printer=${p.typeKey}`);
+            if (jRes.ok) {
+              const jData = await jRes.json();
+              if (jData.state) {
+                rawState = jData.state.toLowerCase();
+                let st = rawState;
+                if (
+                  st === 'operational' ||
+                  st === 'standby' ||
+                  st === 'complete' ||
+                  st === 'cancelled' ||
+                  st === 'canceled' ||
+                  st === 'cancelling' ||
+                  st === 'error'
+                ) {
+                  st = 'ready';
+                }
+                p.status = st;
               }
-              p.status = st;
+              if (jData.job?.file?.name) {
+                p.jobName = jData.job.file.name.replace(/\.gcode$/i, '');
+              }
+              if (jData.progress?.completion !== null && jData.progress?.completion !== undefined) {
+                p.progress = Math.round(jData.progress.completion);
+              }
+              if (jData.progress?.printTimeLeft) {
+                p.timeLeftMins = Math.round(jData.progress.printTimeLeft / 60);
+              }
+              updatedAny = true;
             }
-            if (jData.job?.file?.name) {
-              p.jobName = jData.job.file.name.replace(/\.gcode$/i, '');
-            }
-            if (jData.progress?.completion !== null && jData.progress?.completion !== undefined) {
-              p.progress = Math.round(jData.progress.completion);
-            }
-            if (jData.progress?.printTimeLeft) {
-              p.timeLeftMins = Math.round(jData.progress.printTimeLeft / 60);
-            }
-            updatedAny = true;
+            p._failCount = 0;
+            p._backoffUntil = 0;
+          } else {
+            p._failCount = (p._failCount || 0) + 1;
+            p._backoffUntil = Date.now() + Math.min(60000, p._failCount * 15000);
           }
         } catch (err) {
+          p._failCount = (p._failCount || 0) + 1;
+          p._backoffUntil = Date.now() + Math.min(60000, p._failCount * 15000);
           console.warn(`[Kiddy3D] Proxy fetch warning for ${p.id}:`, err);
         }
       }
@@ -1180,9 +1189,20 @@ class Kiddy3DApp {
   }
 
   startLiveTelemetryLoop() {
-    setInterval(() => {
-      this.tryFetchLiveTelemetry();
-    }, 4000); // Live poll every 4 seconds
+    const scheduleNext = () => {
+      const anyActive = this.printers.some(p => !p.isResin && (p.status === 'printing' || p.status === 'paused' || p.targetNozzle > 0 || p.targetBed > 0));
+      const delay = anyActive ? 5000 : 15000;
+      this._telemetryTimer = setTimeout(async () => {
+        await this.tryFetchLiveTelemetry();
+        scheduleNext();
+      }, delay);
+    };
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        this.tryFetchLiveTelemetry();
+      }
+    });
+    scheduleNext();
   }
 
   // ==================== TAB 2: MANUALS & EARLY READING ====================
